@@ -25,9 +25,23 @@ import com.google.inject.spi.Message;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.shindig.social.opensocial.jpa.eclipselink.EclipseEntityManagerProvider;
+import org.apache.shindig.social.opensocial.jpa.spi.ActivityServiceDb;
+import org.apache.shindig.social.opensocial.jpa.spi.AppDataServiceDb;
+import org.apache.shindig.social.opensocial.jpa.spi.PersonServiceDb;    
+import org.apache.shindig.social.opensocial.jpa.spi.SpaceServiceDb;    
+import org.apache.shindig.social.opensocial.jpa.spi.ApplicationServiceDb;    
+import org.apache.shindig.social.opensocial.jpa.spi.DocumentServiceDb;  
 import org.apache.shindig.social.opensocial.spi.ActivityService;
 import org.apache.shindig.social.opensocial.spi.AppDataService;
 import org.apache.shindig.social.opensocial.spi.PersonService;
+import org.apache.shindig.social.opensocial.spi.AlbumService;
+import org.apache.shindig.social.opensocial.spi.MediaItemService;
+import org.apache.shindig.social.opensocial.spi.MessageService;
+import org.apache.shindig.social.opensocial.spi.PersonService;
+import org.apache.shindig.social.opensocial.spi.SpaceService;
+import org.apache.shindig.social.opensocial.spi.ApplicationService;
+import org.apache.shindig.social.opensocial.spi.DocumentService;
+import org.apache.shindig.social.sample.spi.JsonDbOpensocialService;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,6 +105,14 @@ public class JPASocialModule extends AbstractModule {
     bind(ActivityService.class).to(ActivityServiceDb.class)
         .in(Scopes.SINGLETON);
     bind(PersonService.class).to(PersonServiceDb.class).in(Scopes.SINGLETON);
+    bind(SpaceService.class).to(SpaceServiceDb.class).in(Scopes.SINGLETON);  
     bind(AppDataService.class).to(AppDataServiceDb.class).in(Scopes.SINGLETON);
+    bind(ApplicationService.class).to(ApplicationServiceDb.class).in(Scopes.SINGLETON);
+    bind(DocumentService.class).to(DocumentServiceDb.class).in(Scopes.SINGLETON);
+    
+    //Temporal
+    bind(AlbumService.class).to(JsonDbOpensocialService.class);
+    bind(MediaItemService.class).to(JsonDbOpensocialService.class);
+    bind(MessageService.class).to(JsonDbOpensocialService.class);
   }
 }

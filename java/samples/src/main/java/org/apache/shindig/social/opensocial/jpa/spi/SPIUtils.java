@@ -22,6 +22,9 @@ import com.google.common.collect.Maps;
 
 import org.apache.shindig.auth.SecurityToken;
 import org.apache.shindig.social.opensocial.spi.UserId;
+import org.apache.shindig.social.opensocial.spi.SpaceId;
+import org.apache.shindig.social.opensocial.spi.ApplicationId;
+import org.apache.shindig.social.opensocial.spi.DocumentId;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +58,69 @@ public class SPIUtils {
     }
     return paramList;
   }
+  
+  /**
+   * @param spaceIds
+   * @param token
+   * @return
+   */
+  public static List<String> getSpaceList(Set<SpaceId> spaceIds) {
+    // TODO What's the use of userIdMap?
+    HashMap<String, String> spaceIdMap = Maps.newHashMap();
+    List<String> paramList = Lists.newArrayList();
+    for (SpaceId s : spaceIds) {
+      try {
+    	  String sid = s.getSpaceId(); 
+    	  spaceIdMap.put(sid, sid);
+    	  paramList.add(sid);
+      } catch (IllegalStateException istate) {
+        // ignore the space id.
+      }
+    }
+    return paramList;
+  }
+  
+  /**
+   * @param applicationIds
+   * @param token
+   * @return
+   */
+  public static List<String> getApplicationList(Set<ApplicationId> applicationIds) {
+    // TODO What's the use of userIdMap?
+    HashMap<String, String> applicationIdMap = Maps.newHashMap();
+    List<String> paramList = Lists.newArrayList();
+    for (ApplicationId a : applicationIds) {
+      try {
+    	  String aid = a.getApplicationId(); 
+    	  applicationIdMap.put(aid, aid);
+    	  paramList.add(aid);
+      } catch (IllegalStateException istate) {
+        // ignore the application id.
+      }
+    }
+    return paramList;
+  }
 
+  /**
+   * @param documentIds
+   * @param token
+   * @return
+   */
+  public static List<String> getDocumentList(Set<DocumentId> documentIds) {
+    // TODO What's the use of userIdMap?
+    HashMap<String, String> documentIdMap = Maps.newHashMap();
+    List<String> paramList = Lists.newArrayList();
+    for (DocumentId d : documentIds) {
+      try {
+    	  String did = d.getDocumentId(); 
+    	  documentIdMap.put(did, did);
+    	  paramList.add(did);
+      } catch (IllegalStateException istate) {
+        // ignore the document id.
+      }
+    }
+    return paramList;
+  }   
   /**
    * @param userId
    * @param token

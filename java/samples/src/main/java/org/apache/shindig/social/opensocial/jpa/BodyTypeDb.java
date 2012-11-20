@@ -34,6 +34,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
+import javax.persistence.Transient;
+
 
 import java.util.List;
 
@@ -72,7 +74,8 @@ public class BodyTypeDb implements BodyType, DbObject {
   @Column(name = "version")
   protected long version;
 
-  @OneToMany(targetEntity = PersonDb.class, mappedBy = "bodyType")
+  // @OneToMany(targetEntity = PersonDb.class, mappedBy = "bodyType")
+  @Transient
   private List<Person> persons;
 
   /**

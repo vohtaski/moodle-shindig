@@ -65,7 +65,7 @@ public class ActivityDb implements Activity, DbObject {
 
   public static final String FINDBY_ACTIVITY_ID = "q.activity.findbyactivityid";
 
-  public static final String PARAM_USERID = "userId";
+  public static final String PARAM_PERSONID = "userId";
   
   public static final String PARAM_ACTIVITYID = "activityId";
    

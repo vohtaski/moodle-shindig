@@ -431,6 +431,7 @@
         <module>java/gadgets</module>
         <module>java/social-api</module>
         <module>java/server</module>
+        <module>java/samples</module>
         <module>extras</module>
       </modules>
     </profile>
@@ -494,6 +495,7 @@
           <artifactId>shindig-extras</artifactId>
           <version>${project.version}</version>
         </dependency>
+        
         <!-- external dependencies -->
       </dependencies>
 
@@ -1386,6 +1388,11 @@
       <dependency>
         <groupId>org.apache.shindig</groupId>
         <artifactId>shindig-extras</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.shindig</groupId>
+        <artifactId>shindig-samples</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>

@@ -107,11 +107,18 @@ public class Bootstrap {
     // Ensure that no server-platform is configured
     properties.put(TARGET_SERVER, TargetServer.None);
 
-    properties.put(PersistenceUnitProperties.DDL_GENERATION, PersistenceUnitProperties.CREATE_ONLY);
+    // TODO: this should be taken from persistence.xml
+    properties.put(PersistenceUnitProperties.DDL_GENERATION, "none");
     properties.put(PersistenceUnitProperties.DROP_JDBC_DDL_FILE, "drop.sql");
     properties.put(PersistenceUnitProperties.CREATE_JDBC_DDL_FILE, "create.sql");
-    properties.put(PersistenceUnitProperties.DDL_GENERATION_MODE,
-        PersistenceUnitProperties.DDL_BOTH_GENERATION);
+    properties.put(PersistenceUnitProperties.DDL_GENERATION_MODE,"database");
+
+    // The default shindig settings
+    // properties.put(PersistenceUnitProperties.DDL_GENERATION, PersistenceUnitProperties.CREATE_ONLY);
+    // properties.put(PersistenceUnitProperties.DROP_JDBC_DDL_FILE, "drop.sql");
+    // properties.put(PersistenceUnitProperties.CREATE_JDBC_DDL_FILE, "create.sql");
+    // properties.put(PersistenceUnitProperties.DDL_GENERATION_MODE,
+    //     PersistenceUnitProperties.DDL_BOTH_GENERATION);
 
     // properties.put(PersistenceUnitProperties.SESSION_CUSTOMIZER,
     // EnableIntegrityChecker.class.getName());

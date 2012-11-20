@@ -31,7 +31,21 @@
       "consumer_secret" : "secret",
       "key_type" : "HMAC_SYMMETRIC"
     }
-  }
+  },
+  "http://iamac71.epfl.ch:3000/gadget/oauth_graaasp.xml" : {
+        "graaasp" : {
+            "consumer_secret" : "kAgoDAEDKBoCnMdThTgoqN0Lvo1w7WBGjtSiqhrA",
+            "consumer_key"    : "M8dkbY4SYJNOSnf0CaMw",
+            "key_type"        : "HMAC_SHA1"
+        }
+  },
+  "http://iamac71.epfl.ch:3000/gadget/portability.xml" : {
+        "portability" : {
+            "consumer_secret" : "mJlIprRWyLD9iccVeXSfcTS2fKFwyVBg1HjT0frN",
+            "consumer_key"    : "MDHFY2Iy3blxxkj52xwY",
+            "key_type"        : "HMAC_SHA1"
+        }
+  },
 }
   
 

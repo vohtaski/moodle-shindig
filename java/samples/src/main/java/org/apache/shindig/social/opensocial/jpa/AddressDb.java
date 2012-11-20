@@ -36,6 +36,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
+import javax.persistence.Transient;
+
 
 import java.util.List;
 
@@ -81,7 +83,8 @@ public class AddressDb implements Address, DbObject {
   /**
    * People may be at this address, this is a list of people who are currently at this address.
    */
-  @OneToMany(targetEntity = PersonDb.class, mappedBy = "currentLocation")
+  // @OneToMany(targetEntity = PersonDb.class, mappedBy = "currentLocation")
+  @Transient
   private List<Person> atLocation;
 
   /**

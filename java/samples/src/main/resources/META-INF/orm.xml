@@ -82,4 +82,18 @@
   </entity>
   <entity class="org.apache.shindig.social.opensocial.jpa.ApplicationDataMapValueDb">
   </entity>
+  <entity class="org.apache.shindig.social.opensocial.jpa.SpaceDb">
+  </entity>
+  <entity class="org.apache.shindig.social.opensocial.jpa.DocumentDb">
+  </entity>
+  <entity class="org.apache.shindig.social.opensocial.jpa.MoodleCourseModuleDb">
+  </entity>
+  <entity class="org.apache.shindig.social.opensocial.jpa.MoodleModuleDb">
+  </entity>
+  <entity class="org.apache.shindig.social.opensocial.jpa.MoodleContextDb">
+  </entity>
+  <entity class="org.apache.shindig.social.opensocial.jpa.AppdataDb">
+  </entity>
+  <entity class="org.apache.shindig.social.opensocial.jpa.PermissionDb">
+  </entity>
 </entity-mappings>

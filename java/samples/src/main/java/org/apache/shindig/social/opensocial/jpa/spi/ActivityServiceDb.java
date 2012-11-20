@@ -238,7 +238,7 @@ public class ActivityServiceDb implements ActivityService {
       SecurityToken token) {
     Query q = entityManager.createNamedQuery(ActivityDb.FINDBY_ACTIVITY_ID);
     String uid = SPIUtils.getUserList(userId, token);
-    q.setParameter(ActivityDb.PARAM_USERID, uid);
+    q.setParameter(ActivityDb.PARAM_PERSONID, uid);
     q.setParameter(ActivityDb.PARAM_ACTIVITYID, activityId);
     q.setFirstResult(0);
     q.setMaxResults(1);

@@ -32,6 +32,8 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
+import javax.persistence.Transient;
+
 
 import java.util.List;
 
@@ -71,7 +73,8 @@ public class NameDb implements Name, DbObject {
    * A list of people who shared this name, relationship is specified by the name property on the
    * Person Object.
    */
-  @OneToMany(targetEntity = PersonDb.class, mappedBy = "name")
+  // @OneToMany(targetEntity = PersonDb.class, mappedBy = "name")
+  @Transient
   private List<Person> persons;
 
   /**

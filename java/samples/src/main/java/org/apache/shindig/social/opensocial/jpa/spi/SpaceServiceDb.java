@@ -26,18 +26,17 @@ import org.apache.shindig.protocol.ProtocolException;
 import org.apache.shindig.protocol.RestfulCollection;
 import org.apache.shindig.social.opensocial.jpa.PersonDb;
 import org.apache.shindig.social.opensocial.jpa.SpaceDb;
-import org.apache.shindig.social.opensocial.jpa.PermissionDb;
 import org.apache.shindig.social.opensocial.jpa.api.FilterCapability;
 import org.apache.shindig.social.opensocial.jpa.api.FilterSpecification;
 import org.apache.shindig.social.opensocial.jpa.spi.JPQLUtils;
 import org.apache.shindig.social.opensocial.jpa.spi.SPIUtils;
-import org.apache.shindig.social.opensocial.model.Person;
 import org.apache.shindig.social.opensocial.model.Space;
 import org.apache.shindig.social.opensocial.spi.CollectionOptions;
 import org.apache.shindig.social.opensocial.spi.GroupId;
-import org.apache.shindig.social.opensocial.spi.PersonService;
-import org.apache.shindig.social.opensocial.spi.UserId;
+import org.apache.shindig.social.opensocial.spi.SpaceService;
 import org.apache.shindig.social.opensocial.spi.Context;
+import org.apache.shindig.social.opensocial.spi.SpaceId;
+import org.apache.shindig.social.opensocial.spi.UserId;
 
 import java.util.List;
 import java.util.Set;
@@ -53,7 +52,7 @@ import javax.servlet.http.HttpServletResponse;
  * Implements the PersonService from the SPI binding to the JPA model and providing queries to
  * support the OpenSocial implementation.
  */
-public class PersonServiceDb implements PersonService {
+public class SpaceServiceDb implements SpaceService {
 
   /**
    * This is the JPA entity manager, shared by all threads accessing this service (need to check
@@ -68,15 +67,15 @@ public class PersonServiceDb implements PersonService {
    * @param entityManager the entity manager containing the social model.
    */
   @Inject
-  public PersonServiceDb(EntityManager entityManager) {
+  public SpaceServiceDb(EntityManager entityManager) {
     this.entityManager = entityManager;
   }
 
   /**
    * {@inheritDoc}
    */
-  public Future<RestfulCollection<Person>> getPeople(Set<UserId> userIds,
-       GroupId groupId, CollectionOptions collectionOptions, Set<String> fields,
+  public Future<RestfulCollection<Space>> getSpaces(Set<SpaceId> spaceIds, 
+		  CollectionOptions collectionOptions, Set<String> fields,
        SecurityToken token) throws ProtocolException {
     // for each user id get the filtered userid using the token and then, get the users identified
     // by the group id, the final set is filtered
@@ -84,93 +83,80 @@ public class PersonServiceDb implements PersonService {
 
     // not dealing with the collection options at the moment, and not the fields because they are
     // either lazy or at no extra costs, the consumer will either access the properties or not
-    List<Person> plist = null;
+    List<Space> plist = null;
     int lastPos = 1;
     Long totalResults = null;
 
     StringBuilder sb = new StringBuilder();
     // sanitize the list to get the uid's and remove duplicates
-    List<String> paramList = SPIUtils.getUserList(userIds, token);
-    // select the group Id as this will drive the query
-    switch (groupId.getType()) {
-    case all:
-      // select all contacts
-      sb.append(PersonDb.JPQL_FINDALLPERSON);
-      lastPos = JPQLUtils.addInClause(sb, "p", "id", lastPos, paramList.size());
-      break;
-    case friends:
-      // select all friends (subset of contacts)
-      sb.append(PersonDb.JPQL_FINDPERSON_BY_FRIENDS);
-      lastPos = JPQLUtils.addInClause(sb, "p", "id", lastPos, paramList.size());
-      sb.append(") ");
-      // TODO Group by doesn't work in HSQLDB or Derby - causes a "Not in aggregate function or group by clause" jdbc exception
-      // sb.append(" group by p ");
-      break;
-    case groupId:
-      // implementation is required to support the requests implemented for graaasp
-//        switch ($group_id) {
-//       case '@spaces':
-//         $ret = $this->getPersonSpacesIds($user_id);
-//         break;
-//       case '@people':
-//         $ret = $this->getSpacePeopleIds($user_id);
-//         break;
-//       case '@administrators':
-//         $ret = $this->getAdministratorsIds($user_id);
-//         break;
-//       case '@members':
-//         $ret = $this->getMembersIds($user_id);
-//         break;
-         
-      // select those in the group
-      sb.append(PersonDb.JPQL_FINDPERSON_BY_GROUP);
-      lastPos = JPQLUtils.addInClause(sb, "p", "id", lastPos, paramList.size());
-      sb.append(" and g.id = ?").append(lastPos);
-      lastPos++;
-      break;
-    case deleted:
-      // ???
-      break;
-    case self:
-      // select self
-      sb.append(PersonDb.JPQL_FINDPERSON);
-      lastPos = JPQLUtils.addInClause(sb, "p", "id", lastPos, paramList.size());
-      break;
-    default:
-      throw new ProtocolException(HttpServletResponse.SC_BAD_REQUEST, "Group ID not recognized");
+    List<String> paramList = SPIUtils.getSpaceList(spaceIds);
+    
+    sb.append(SpaceDb.JPQL_FINDSPACE);
+    lastPos = JPQLUtils.addInClause(sb, "s", "id", lastPos, paramList.size());
 
+    
+    // Get total results, that is count the total number of rows for this query
+    // totalResults = JPQLUtils.getTotalResults(entityManager, sb.toString(), paramList);
+
+    
+    // Execute ordered and paginated query
+    //if (totalResults > 0) {
+    	//addOrderClause(sb, collectionOptions);
+    	plist = JPQLUtils.getListQuery(entityManager, sb.toString(), paramList, collectionOptions);
+    //}
+
+    if (plist == null) {
+    	plist = Lists.newArrayList();
     }
-
-    if (GroupId.Type.self.equals(groupId.getType())) {
-      plist = JPQLUtils.getListQuery(entityManager, sb.toString(), paramList, collectionOptions);
-      totalResults = Long.valueOf(1);
-      if (plist.isEmpty()) {
-        throw new ProtocolException(HttpServletResponse.SC_BAD_REQUEST, "Person not found");
-      }
-    } else {
-      int filterPos = addFilterClause(sb, PersonDb.getFilterCapability(), collectionOptions,
-          lastPos);
-      if (filterPos > 0) {
-        paramList.add(collectionOptions.getFilterValue());
-      }
-
-      // Get total results, that is count the total number of rows for this query
-      totalResults = JPQLUtils.getTotalResults(entityManager, sb.toString(), paramList);
-
-      // Execute ordered and paginated query
-      if (totalResults > 0) {
-        addOrderClause(sb, collectionOptions);
-        plist = JPQLUtils.getListQuery(entityManager, sb.toString(), paramList, collectionOptions);
-      }
-
-      if (plist == null) {
-        plist = Lists.newArrayList();
-      }
-    }
-
+    // FIXME: use JPQLUtils.getTotalResults for it
+    totalResults = new Long(plist.size());
     // all of the above could equally have been placed into a thread to overlay the
     // db wait times.
-    RestfulCollection<Person> restCollection = new RestfulCollection<Person>(
+    RestfulCollection<Space> restCollection = new RestfulCollection<Space>(
+        plist, collectionOptions.getFirst(), totalResults.intValue(), collectionOptions.getMax());
+    return ImmediateFuture.newInstance(restCollection);
+
+  }
+
+  public Future<RestfulCollection<Space>> getSpacesForContext(Context context, 
+      CollectionOptions collectionOptions, Set<String> fields,
+       SecurityToken token) throws ProtocolException {
+    // list of spaces is retrieved for a context
+
+    // not dealing with the collection options at the moment, and not the fields because they are
+    // either lazy or at no extra costs, the consumer will either access the properties or not
+    List<Space> plist = null;
+    int lastPos = 1;
+    Long totalResults = null;
+
+    StringBuilder sb = new StringBuilder();
+    // sanitize the list to get the uid's and remove duplicates
+    List<String> paramList = Lists.newArrayList();
+    
+    sb.append(SpaceDb.JPQL_FINDSPACES);
+    if(context.getContextType().equals("@person")){
+      sb.append("s.parentId = "+context.getContextId()+" and s.parentType = 'User'");
+    }else if (context.getContextType().equals("@space")){
+      sb.append("s.parentId = "+context.getContextId()+" and s.parentType = 'Space'");
+    }
+    
+    // Get total results, that is count the total number of rows for this query
+    // totalResults = JPQLUtils.getTotalResults(entityManager, sb.toString(), paramList);
+    
+    // Execute ordered and paginated query
+    //if (totalResults > 0) {
+    	//addOrderClause(sb, collectionOptions);
+    	plist = JPQLUtils.getListQuery(entityManager, sb.toString(), paramList, collectionOptions);
+    //}
+
+    if (plist == null) {
+    	plist = Lists.newArrayList();
+    }
+    // FIXME: use JPQLUtils.getTotalResults for it
+    totalResults = new Long(plist.size());
+    // all of the above could equally have been placed into a thread to overlay the
+    // db wait times.
+    RestfulCollection<Space> restCollection = new RestfulCollection<Space>(
         plist, collectionOptions.getFirst(), totalResults.intValue(), collectionOptions.getMax());
     return ImmediateFuture.newInstance(restCollection);
 
@@ -179,123 +165,26 @@ public class PersonServiceDb implements PersonService {
   /**
    * {@inheritDoc}
    */
-  public Future<Person> getPerson(UserId id, Set<String> fields, SecurityToken token)
+  public Future<Space> getSpace(SpaceId spaceId, Set<String> fields, SecurityToken token)
       throws ProtocolException {
-    String uid = id.getUserId(token);
+ 
     Query q = null;
-    
-    if (uid.startsWith("s_")) { // for spaces
-      // Current implementation to support owner for spaces
-      // Takes space as context and viewer from security token
-      String spaceId = uid.replaceFirst("s_","");
-      String viewerId = token.getViewerId();
-      
-      // Get Id of moodle course for this widgetspace
-      String moodleCourseId = "";
-      // gets space for spaceId from the database
-      q = entityManager.createNamedQuery(SpaceDb.FINDBY_SPACEID);
-      q.setParameter(SpaceDb.PARAM_SPACEID, spaceId);
-      q.setFirstResult(0);
-      q.setMaxResults(1);
-      List<?> plist = q.getResultList();
-      if (plist != null && !plist.isEmpty()) {
-        Space s = (Space) plist.get(0);
-        moodleCourseId = s.getParentId();
-      }
-      
-      // get course owners
-      StringBuilder sb = new StringBuilder();
-      sb.append(PermissionDb.JPQL_OWNERS_BY_MOODLE_COURSE);
-      sb.append(moodleCourseId).append("')");
-      List<String> owners = JPQLUtils.getListQuery(entityManager, sb.toString(),
-          Lists.newArrayList(), null);
-          
-      /**
-       * Only course teachers and managers are considered to be owners
-       * Site administrators are not the owners of widgetspaces
-       * If we want to add them as owners we should append mdl_config -> siteadmins
-       * to PersonServiceDb.java (getPerson) -> owners variable
-       */
-                  
-      // If viewer is in the list of owners for a space it returns him, 
-      // otherwise returns first user from owners list.
-      if (owners.size() == 0) {
-        throw new ProtocolException(HttpServletResponse.SC_NOT_FOUND ,"space does not have owners!");
-      }
-      
-      uid = owners.get(0);
-      for (String owner : owners) {
-        if (owner.equals(viewerId)) {
-          uid = viewerId; // viewer is the owner, set it
-          break;
-        }
-      }     
-      
-    }
-    
-    // uid is set up now: either user-owner or owner of a space
-    q = entityManager.createNamedQuery(PersonDb.FINDBY_PERSONID);
-    q.setParameter(PersonDb.PARAM_PERSONID, uid);
+    // gets space for spaceId from the database
+    q = entityManager.createNamedQuery(SpaceDb.FINDBY_SPACEID);
+    q.setParameter(SpaceDb.PARAM_SPACEID, spaceId.getSpaceId());
     q.setFirstResult(0);
     q.setMaxResults(1);
-    
+   
+
     List<?> plist = q.getResultList();
-    Person person = null;
+    Space space = null;
     if (plist != null && !plist.isEmpty()) {
-      person = (Person) plist.get(0);
+      space = (Space) plist.get(0);
     }
-    return ImmediateFuture.newInstance(person);
+    return ImmediateFuture.newInstance(space);
   }
 
-  public Future<RestfulCollection<Person>> getPeopleForContext(Context context, 
-      CollectionOptions collectionOptions, Set<String> fields,
-       SecurityToken token) throws ProtocolException {
-    // list of spaces is retrieved for a context
 
-    // not dealing with the collection options at the moment, and not the fields because they are
-    // either lazy or at no extra costs, the consumer will either access the properties or not
-    List<Person> plist = null;
-    int lastPos = 1;
-    Long totalResults = null;
-
-    StringBuilder sb = new StringBuilder();
-    // sanitize the list to get the uid's and remove duplicates
-    List<String> paramList = Lists.newArrayList();
-    
-    // finds people connected (in Graaasp sense) to other people
-    // or spaces
-    sb.append(PersonDb.JPQL_FINDPERSON_BY_PERMISSIONS);
-    // add permission to request
-    if(context.getContextType().equals("@person")){
-     sb.append("p.itemId = "+context.getContextId()+" and p.itemType = 'User')");
-    }else if (context.getContextType().equals("@space")){
-     sb.append("p.itemId = "+context.getContextId()+" and p.itemType = 'Space')");
-    }
-    // sb.append(PersonDb.JPQL_PERMISSIONS);
-    // sb.append("p.itemId = "+context.getContextId()+" and p.itemType = 'Space'");
-    
-    // Get total results, that is count the total number of rows for this query
-    // totalResults = JPQLUtils.getTotalResults(entityManager, sb.toString(), paramList);
-    
-    // Execute ordered and paginated query
-    //if (totalResults > 0) {
-      //addOrderClause(sb, collectionOptions);
-      plist = JPQLUtils.getListQuery(entityManager, sb.toString(), paramList, collectionOptions);
-    //}
-
-    if (plist == null) {
-      plist = Lists.newArrayList();
-    }
-    // FIXME: use JPQLUtils.getTotalResults for it
-    totalResults = new Long(plist.size());
-    // all of the above could equally have been placed into a thread to overlay the
-    // db wait times.
-    RestfulCollection<Person> restCollection = new RestfulCollection<Person>(
-        plist, collectionOptions.getFirst(), totalResults.intValue(), collectionOptions.getMax());
-    return ImmediateFuture.newInstance(restCollection);
-  }
-  
-  
 
   /**
    * Add a filter clause specified by the collection options.
@@ -314,13 +203,13 @@ public class PersonServiceDb implements PersonService {
     int filterPos = 0;
     if (FilterSpecification.isValid(filter)) {
       if (FilterSpecification.isSpecial(filter)) {
-        if (PersonService.HAS_APP_FILTER.equals(filter)) {
+        if (SpaceService.HAS_APP_FILTER.equals(filter)) {
           // Retrieves all friends with any data for this application.
           // TODO: how do we determine which application is being talked about,
           // the assumption below is wrong
           filterPos = lastPos + 1;
           sb.append(" f.application_id  = ?").append(filterPos);
-        } else if (PersonService.TOP_FRIENDS_FILTER.equals(filter)) {
+        } else if (SpaceService.TOP_FRIENDS_FILTER.equals(filter)) {
           // Retrieves only the user's top friends, this is defined here by the implementation
           // and there is an assumption that the sort order has already been applied.
           // to do this we need to modify the collections options
@@ -329,9 +218,9 @@ public class PersonServiceDb implements PersonService {
           collectionOptions.setFirst(1);
           collectionOptions.setMax(20);
 
-        } else if (PersonService.ALL_FILTER.equals(filter)) {
+        } else if (SpaceService.ALL_FILTER.equals(filter)) {
            // select all, ie no filtering
-        } else if (PersonService.IS_WITH_FRIENDS_FILTER.equals(filter)) {
+        } else if (SpaceService.IS_WITH_FRIENDS_FILTER.equals(filter)) {
           filterPos = lastPos + 1;
           sb.append(" f.friend  = ?").append(filterPos);
         }
@@ -372,7 +261,7 @@ public class PersonServiceDb implements PersonService {
   private void addOrderClause(StringBuilder sb, CollectionOptions collectionOptions) {
     String sortBy = collectionOptions.getSortBy();
     if (sortBy != null && sortBy.length() > 0) {
-      if (PersonService.TOP_FRIENDS_SORT.equals(sortBy)) {
+      if (SpaceService.TOP_FRIENDS_SORT.equals(sortBy)) {
         // TODO sorting by friend.score doesn't work right now because of group by issue (see above TODO)
         // this assumes that the query is a join with the friends store.
         sb.append(" order by f.score ");

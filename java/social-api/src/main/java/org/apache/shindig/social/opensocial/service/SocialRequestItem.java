@@ -30,6 +30,7 @@ import org.apache.shindig.protocol.multipart.FormDataItem;
 import org.apache.shindig.social.opensocial.spi.GroupId;
 import org.apache.shindig.social.opensocial.spi.PersonService;
 import org.apache.shindig.social.opensocial.spi.UserId;
+import org.apache.shindig.social.opensocial.spi.Context;
 import org.json.JSONObject;
 
 import com.google.common.collect.ImmutableSet;
@@ -41,6 +42,9 @@ public class SocialRequestItem extends BaseRequestItem {
 
   private static final String USER_ID = "userId";
   private static final String GROUP_ID = "groupId";
+
+  private static final String CONTEXT_ID = "contextId";
+  private static final String CONTEXT_TYPE = "contextType";
 
   public SocialRequestItem(Map<String, String[]> parameters, 
       SecurityToken token, BeanConverter converter, BeanJsonConverter jsonConverter) {
@@ -64,6 +68,19 @@ public class SocialRequestItem extends BaseRequestItem {
       userIds.add(UserId.fromJson(id));
     }
     return userIds.build();
+  }
+  
+  public Set<String> getContextIds() {
+	  List<String> ids = getListParameter(CONTEXT_ID);
+
+	  ImmutableSet.Builder<String> contextIds = ImmutableSet.builder();
+	  for (String id : ids) {
+		  contextIds.add(id);
+	  }
+	  return contextIds.build();
+  }
+  public String getContextType() {
+	  return getParameter(CONTEXT_TYPE);
   }
 
   public GroupId getGroup() {

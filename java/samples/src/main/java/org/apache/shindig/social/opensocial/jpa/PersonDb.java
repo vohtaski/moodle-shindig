@@ -74,7 +74,7 @@ import javax.persistence.Version;
  * Default Implementation of the Person object in the org.apache.shindig.social.opensocial.jpa.
  */
 @Entity
-@Table(name = "person")
+@Table(name = "mdl_user")
 @NamedQueries(value = {
     @NamedQuery(name = PersonDb.FINDBY_PERSONID,
         query = "select p from PersonDb p where p.id = :id "),
@@ -190,7 +190,9 @@ public class PersonDb implements Person, DbObject {
   // Using 'group by' to avoid duplicates doesn't work in HSQLDB or Derby - causes a "Not in aggregate function or group by clause" jdbc exception.
   // public static final String JPQL_FINDPERSON_BY_FRIENDS = "select p from PersonDb p join FriendDb f on p.objectId = f.friend.objectId where p.objectId in (select f.friend.objectId from PersonDb p, FriendDb f where p.objectId = f.person.objectId and ";
   public static final String JPQL_FINDPERSON_BY_FRIENDS = "select p from PersonDb p where p.objectId in (select f.friend.objectId from PersonDb p, FriendDb f where p.objectId = f.person.objectId and ";
-
+  public static final String JPQL_FINDPERSON_BY_PERMISSIONS = "select a from PersonDb a where a.objectId in (select p.userId from PermissionDb p where p.status = 'joined' and ";
+  public static final String JPQL_PERMISSIONS = "select p.userId from PermissionDb p where p.status = 'joined' and ";
+  
   public static final Object JPQL_FINDPERSON_BY_GROUP = null;
 
   public static final Object JPQL_FINDPERSON = "select p from PersonDb p where ";
@@ -201,38 +203,62 @@ public class PersonDb implements Person, DbObject {
    */
   @Id
   @GeneratedValue(strategy = IDENTITY)
-  @Column(name = "oid")
+  @Column(name = "id")
   private long objectId;
+
+  /**
+   * First Name
+   */
+  @Basic
+  @Column(name = "firstname")
+  private String firstName;
+
+  /**
+   * Last Name
+   */
+  @Basic
+  @Column(name = "lastname")
+  private String lastName;
+  
+  /**
+   * Description
+   */
+  @Basic
+  @Column(name = "description", length = 255)
+  protected String aboutMe;
+
 
   /**
    * An optimistic locking field.
    */
-  @Version
-  @Column(name = "version")
+  // @Version
+  // @Column(name = "version")
+  @Transient
   protected long version;
 
-  @Basic
-  @Column(name = "about_me", length = 255)
-  protected String aboutMe;
-
-  @OneToMany(targetEntity = PersonPropertyDb.class, mappedBy = "person", cascade = ALL)
+  // @OneToMany(targetEntity = PersonPropertyDb.class, mappedBy = "person", cascade = ALL)
+  @Transient
   protected List<PersonPropertyDb> properties = Lists.newArrayList();
 
-  @OneToMany(targetEntity = PersonAccountDb.class, mappedBy = "person", cascade = ALL)
+  // @OneToMany(targetEntity = PersonAccountDb.class, mappedBy = "person", cascade = ALL)
+  @Transient
   protected List<Account> accounts;
 
   @Transient
   protected List<String> activities;
 
-  @OneToMany(targetEntity = PersonAddressDb.class, mappedBy = "person", cascade = ALL)
+  // @OneToMany(targetEntity = PersonAddressDb.class, mappedBy = "person", cascade = ALL)
+  @Transient
   protected List<Address> addresses;
 
-  @Basic
-  @Column(name = "age")
+  // @Basic
+  // @Column(name = "age")
+  @Transient
   protected Integer age;
 
-  @ManyToOne(targetEntity = BodyTypeDb.class, cascade = ALL)
-  @JoinColumn(name = "body_type_id", referencedColumnName = "oid")
+  // @ManyToOne(targetEntity = BodyTypeDb.class, cascade = ALL)
+  // @JoinColumn(name = "body_type_id", referencedColumnName = "oid")
+  @Transient
   protected BodyType bodyType;
 
   @Transient
@@ -241,57 +267,65 @@ public class PersonDb implements Person, DbObject {
   @Transient
   protected List<String> cars;
 
-  @Basic
-  @Column(name = "children", length = 255)
+  // @Basic
+  // @Column(name = "children", length = 255)
+  @Transient
   protected String children;
 
   /**
    *
    */
-  @ManyToOne(targetEntity = AddressDb.class, cascade = { PERSIST, MERGE, REFRESH })
-  @JoinColumn(name = "address_id", referencedColumnName = "oid")
+  // @ManyToOne(targetEntity = AddressDb.class, cascade = { PERSIST, MERGE, REFRESH })
+  // @JoinColumn(name = "address_id", referencedColumnName = "oid")
+  @Transient
   protected Address currentLocation;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "birthday")
-  @Temporal(TemporalType.DATE)
+  // @Basic
+  // @Column(name = "birthday")
+  // @Temporal(TemporalType.DATE)
+  @Transient
   protected Date birthday;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "drinker", length = 255)
+  // @Basic
+  // @Column(name = "drinker", length = 255)
+  @Transient
   protected String drinkerDb;
 
   @Transient
   protected Enum<Drinker> drinker;
 
-  @Basic
-  @Column(name = "display_name", length = 255)
+  // @Basic
+  // @Column(name = "display_name", length = 255)
+  @Transient
   private String displayName;
 
   /**
    *
    */
-  @OneToMany(targetEntity = EmailDb.class, mappedBy = "person", cascade = ALL)
+  // @OneToMany(targetEntity = EmailDb.class, mappedBy = "person", cascade = ALL)
+  @Transient
   protected List<ListField> emails;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "ethnicity", length = 255)
+  // @Basic
+  // @Column(name = "ethnicity", length = 255)
+  @Transient
   protected String ethnicity;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "fashion", length = 255)
+  // @Basic
+  // @Column(name = "fashion", length = 255)
+  @Transient
   protected String fashion;
 
   /**
@@ -303,8 +337,9 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "gender", length = 255)
+  // @Basic
+  // @Column(name = "gender", length = 255)
+  @Transient
   protected String genderDb;
 
   @Transient
@@ -313,8 +348,9 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "happiest_when", length = 255)
+  // @Basic
+  // @Column(name = "happiest_when", length = 255)
+  @Transient
   protected String happiestWhen;
 
   /**
@@ -332,21 +368,23 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "humor", length = 255)
+  // @Basic
+  // @Column(name = "humor", length = 255)
+  @Transient
   protected String humor;
 
   /**
    *
    */
   @Basic
-  @Column(name = "person_id", length = 255)
+  @Column(name = "id", length = 255, insertable = false, updatable = false)
   protected String id;
 
   /**
    *
    */
-  @OneToMany(targetEntity = ImDb.class, mappedBy = "person", cascade = ALL)
+  // @OneToMany(targetEntity = ImDb.class, mappedBy = "person", cascade = ALL)
+  @Transient
   protected List<ListField> ims;
 
   /**
@@ -358,8 +396,9 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "job_interests", length = 255)
+  // @Basic
+  // @Column(name = "job_interests", length = 255)
+  @Transient
   protected String jobInterests;
 
   /**
@@ -371,16 +410,18 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "updated")
-  @Temporal(TemporalType.TIMESTAMP)
+  // @Basic
+  // @Column(name = "updated")
+  // @Temporal(TemporalType.TIMESTAMP)
+  @Transient
   protected Date updated;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "living_arrangement", length = 255)
+  // @Basic
+  // @Column(name = "living_arrangement", length = 255)
+  @Transient
   protected String livingArrangement;
 
   /**
@@ -405,15 +446,17 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @ManyToOne(targetEntity = NameDb.class, cascade = ALL)
-  @JoinColumn(name = "name_id", referencedColumnName = "oid")
+  // @ManyToOne(targetEntity = NameDb.class, cascade = ALL)
+  // @JoinColumn(name = "name_id", referencedColumnName = "oid")
+  @Transient
   protected Name name;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "network_presence", length = 255)
+  // @Basic
+  // @Column(name = "network_presence", length = 255)
+  @Transient
   protected String networkPresenceDb;
 
   @Transient
@@ -423,41 +466,48 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "nickname", length = 255)
+  // @Basic
+  // @Column(name = "nickname", length = 255)
+  @Transient
   protected String nickname;
 
   /**
    *
    */
-  @OneToMany(targetEntity = PersonOrganizationDb.class, mappedBy = "person", cascade = { PERSIST,
-      MERGE, REFRESH })
+  // @OneToMany(targetEntity = PersonOrganizationDb.class, mappedBy = "person", cascade = { PERSIST,
+      // MERGE, REFRESH })
+  @Transient
   protected List<Organization> organizations;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "pets", length = 255)
+  // @Basic
+  // @Column(name = "pets", length = 255)
+  @Transient
   protected String pets;
 
   /**
    *
    */
-  @OneToMany(targetEntity = PhoneDb.class, mappedBy = "person", cascade = ALL)
+  // @OneToMany(targetEntity = PhoneDb.class, mappedBy = "person", cascade = ALL)
+  @Transient
   protected List<ListField> phoneNumbers;
 
   /**
    *
    */
-  @OneToMany(targetEntity = PhotoDb.class, mappedBy = "person", cascade = ALL)
+  // @OneToMany(targetEntity = PhotoDb.class, mappedBy = "person", cascade = ALL)
+  @Transient
   protected List<ListField> photos;
-  @Basic
-  @Column(name = "political_views", length = 255)
+  // @Basic
+  // @Column(name = "political_views", length = 255)
+  @Transient
   protected String politicalViews;
 
-  @Basic
-  @Column(name = "preferredUsername", length = 255)
+  // @Basic
+  // @Column(name = "preferredUsername", length = 255)
+  @Transient
   protected String preferredUsername;
 
   /**
@@ -481,43 +531,49 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "relationship_status", length = 255)
+  // @Basic
+  // @Column(name = "relationship_status", length = 255)
+  @Transient
   protected String relationshipStatus;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "religion", length = 255)
+  // @Basic
+  // @Column(name = "religion", length = 255)
+  @Transient
   protected String religion;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "romance", length = 255)
+  // @Basic
+  // @Column(name = "romance", length = 255)
+  @Transient
   protected String romance;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "scared_of", length = 255)
+  // @Basic
+  // @Column(name = "scared_of", length = 255)
+  @Transient
   protected String scaredOf;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "sexual_orientation", length = 255)
+  // @Basic
+  // @Column(name = "sexual_orientation", length = 255)
+  @Transient
   protected String sexualOrientation;
 
   /**
    *
    */
-  @Basic
-  @Column(name = "smoker", length = 255)
+  // @Basic
+  // @Column(name = "smoker", length = 255)
+  @Transient
   protected String smokerDb;
 
   @Transient
@@ -532,8 +588,9 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "status", length = 255)
+  // @Basic
+  // @Column(name = "status", length = 255)
+  @Transient
   protected String status;
 
   /**
@@ -545,8 +602,9 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @Basic
-  @Column(name = "utc_offset")
+  // @Basic
+  // @Column(name = "utc_offset")
+  @Transient
   protected Long utcOffset;
 
   /**
@@ -570,7 +628,8 @@ public class PersonDb implements Person, DbObject {
   /**
    *
    */
-  @OneToMany(targetEntity = UrlDb.class, mappedBy = "person", cascade = ALL)
+  // @OneToMany(targetEntity = UrlDb.class, mappedBy = "person", cascade = ALL)
+  @Transient
   protected List<Url> urls;
 
   // Note: Not in the opensocial js person object directly
@@ -586,10 +645,11 @@ public class PersonDb implements Person, DbObject {
    * person_application.person_id points to person.oid and person_application.application_id points
    * to application.oid.
    */
-  @ManyToMany(targetEntity = ApplicationDb.class)
-  @JoinTable(name = "person_application",
-      joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "oid"),
-      inverseJoinColumns = @JoinColumn(name = "application_id", referencedColumnName = "oid"))
+  // @ManyToMany(targetEntity = ApplicationDb.class)
+  // @JoinTable(name = "person_application",
+      // joinColumns = @JoinColumn(name = "person_id", referencedColumnName = "oid"),
+      // inverseJoinColumns = @JoinColumn(name = "application_id", referencedColumnName = "oid"))
+  @Transient
   protected List<ApplicationDb> applictions;
 
   public PersonDb() {
@@ -1212,63 +1272,63 @@ public class PersonDb implements Person, DbObject {
   @PostLoad
   public void loadTransientFields() {
 
-    drinkerDb = drinker.toString();
-    genderDb = gender.toString();
-    networkPresenceDb = networkPresence.toString();
-    smokerDb = smoker.toString();
-
-    drinker = new EnumDb<Drinker>(Drinker.valueOf(drinkerDb));
-    gender = Gender.valueOf(genderDb);
-    networkPresence = new EnumDb<NetworkPresence>(NetworkPresence.valueOf(networkPresenceDb));
-    smoker = new EnumDb<Smoker>(Smoker.valueOf(smokerDb));
-
-    List<String> lookingFor = Lists.newArrayList();
-    this.activities = Lists.newArrayList();
-    this.books = Lists.newArrayList();
-    this.cars = Lists.newArrayList();
-    this.food = Lists.newArrayList();
-    this.heroes = Lists.newArrayList();
-    this.interests = Lists.newArrayList();
-    this.languagesSpoken = Lists.newArrayList();
-    this.movies = Lists.newArrayList();
-    this.music = Lists.newArrayList();
-    this.quotes = Lists.newArrayList();
-    this.sports = Lists.newArrayList();
-    this.tags = Lists.newArrayList();
-    this.turnOffs = Lists.newArrayList();
-    this.turnOns = Lists.newArrayList();
-    this.tvShows = Lists.newArrayList();
-
-    Map<String, List<String>> toSave = Maps.newHashMap();
-
-    toSave.put(LOOKING_FOR_PROPERTY, lookingFor);
-    toSave.put(ACTIVITIES_PROPERTY, this.activities);
-    toSave.put(BOOKS_PROPERTY, this.books);
-    toSave.put(CARS_PROPERTY, this.cars);
-    toSave.put(FOOD_PROPERTY, this.food);
-    toSave.put(HEROES_PROPERTY, this.heroes);
-    toSave.put(INTERESTS_PROPERTY, this.interests);
-    toSave.put(LANGUAGES_PROPERTY, this.languagesSpoken);
-    toSave.put(MOVIES_PROPERTY, this.movies);
-    toSave.put(MUSIC_PROPERTY, this.music);
-    toSave.put(QUOTES_PROPERTY, this.quotes);
-    toSave.put(SPORTS_PROPERTY, this.sports);
-    toSave.put(TAGS_PROPERTY, this.tags);
-    toSave.put(TURNOFFS_PROPERTY, this.turnOffs);
-    toSave.put(TURNONS_PROPERTY, this.turnOns);
-    toSave.put(TVSHOWS_PROPERTY, this.tvShows);
-
-    for (PersonPropertyDb pp : properties) {
-      List<String> l = toSave.get(pp.type);
-      if (l != null) {
-        l.add(pp.getValue());
-      }
-    }
-
-    this.lookingFor = Lists.newArrayList();
-    for (String lf : lookingFor) {
-      this.lookingFor.add(new EnumDb<LookingFor>(LookingFor.valueOf(lf)));
-    }
+    // drinkerDb = drinker.toString();
+    // genderDb = gender.toString();
+    // networkPresenceDb = networkPresence.toString();
+    // smokerDb = smoker.toString();
+    // 
+    // drinker = new EnumDb<Drinker>(Drinker.valueOf(drinkerDb));
+    // gender = Gender.valueOf(genderDb);
+    // networkPresence = new EnumDb<NetworkPresence>(NetworkPresence.valueOf(networkPresenceDb));
+    // smoker = new EnumDb<Smoker>(Smoker.valueOf(smokerDb));
+    // 
+    // List<String> lookingFor = Lists.newArrayList();
+    // this.activities = Lists.newArrayList();
+    // this.books = Lists.newArrayList();
+    // this.cars = Lists.newArrayList();
+    // this.food = Lists.newArrayList();
+    // this.heroes = Lists.newArrayList();
+    // this.interests = Lists.newArrayList();
+    // this.languagesSpoken = Lists.newArrayList();
+    // this.movies = Lists.newArrayList();
+    // this.music = Lists.newArrayList();
+    // this.quotes = Lists.newArrayList();
+    // this.sports = Lists.newArrayList();
+    // this.tags = Lists.newArrayList();
+    // this.turnOffs = Lists.newArrayList();
+    // this.turnOns = Lists.newArrayList();
+    // this.tvShows = Lists.newArrayList();
+    // 
+    // Map<String, List<String>> toSave = Maps.newHashMap();
+    // 
+    // toSave.put(LOOKING_FOR_PROPERTY, lookingFor);
+    // toSave.put(ACTIVITIES_PROPERTY, this.activities);
+    // toSave.put(BOOKS_PROPERTY, this.books);
+    // toSave.put(CARS_PROPERTY, this.cars);
+    // toSave.put(FOOD_PROPERTY, this.food);
+    // toSave.put(HEROES_PROPERTY, this.heroes);
+    // toSave.put(INTERESTS_PROPERTY, this.interests);
+    // toSave.put(LANGUAGES_PROPERTY, this.languagesSpoken);
+    // toSave.put(MOVIES_PROPERTY, this.movies);
+    // toSave.put(MUSIC_PROPERTY, this.music);
+    // toSave.put(QUOTES_PROPERTY, this.quotes);
+    // toSave.put(SPORTS_PROPERTY, this.sports);
+    // toSave.put(TAGS_PROPERTY, this.tags);
+    // toSave.put(TURNOFFS_PROPERTY, this.turnOffs);
+    // toSave.put(TURNONS_PROPERTY, this.turnOns);
+    // toSave.put(TVSHOWS_PROPERTY, this.tvShows);
+    // 
+    // for (PersonPropertyDb pp : properties) {
+    //   List<String> l = toSave.get(pp.type);
+    //   if (l != null) {
+    //     l.add(pp.getValue());
+    //   }
+    // }
+    // 
+    // this.lookingFor = Lists.newArrayList();
+    // for (String lf : lookingFor) {
+    //   this.lookingFor.add(new EnumDb<LookingFor>(LookingFor.valueOf(lf)));
+    // }
 
   }
 
@@ -1278,7 +1338,7 @@ public class PersonDb implements Person, DbObject {
    * @see org.apache.shindig.social.opensocial.model.Person#getDisplayName()
    */
   public String getDisplayName() {
-    return displayName;
+    return firstName+" "+lastName;
   }
 
   /*

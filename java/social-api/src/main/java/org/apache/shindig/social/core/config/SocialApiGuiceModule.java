@@ -38,6 +38,13 @@ import org.apache.shindig.social.opensocial.service.AppDataHandler;
 import org.apache.shindig.social.opensocial.service.MediaItemHandler;
 import org.apache.shindig.social.opensocial.service.MessageHandler;
 import org.apache.shindig.social.opensocial.service.PersonHandler;
+import org.apache.shindig.social.opensocial.service.SpaceHandler;
+import org.apache.shindig.social.opensocial.service.ApplicationHandler;
+import org.apache.shindig.social.opensocial.service.DocumentHandler;
+import org.apache.shindig.social.opensocial.service.ContextHandler;
+
+import org.apache.shindig.social.opensocial.oauth.OAuthDataStore;
+import org.apache.shindig.social.sample.oauth.SampleOAuthDataStore;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.AbstractModule;
@@ -69,6 +76,8 @@ public class SocialApiGuiceModule extends AbstractModule {
         BeanJsonConverter.class);
     bind(BeanConverter.class).annotatedWith(Names.named("shindig.bean.converter.atom")).to(
         BeanXStreamAtomConverter.class);
+    
+    bind(OAuthDataStore.class).to(SampleOAuthDataStore.class);
 
     bind(new TypeLiteral<List<AuthenticationHandler>>(){}).toProvider(
         AuthenticationHandlerProvider.class);
@@ -85,6 +94,7 @@ public class SocialApiGuiceModule extends AbstractModule {
    */
   protected Set<Class<?>> getHandlers() {
     return ImmutableSet.<Class<?>>of(ActivityHandler.class, AppDataHandler.class,
-        PersonHandler.class, MessageHandler.class, AlbumHandler.class, MediaItemHandler.class);
+        PersonHandler.class, MessageHandler.class, AlbumHandler.class, MediaItemHandler.class, 
+        SpaceHandler.class, ApplicationHandler.class, DocumentHandler.class, ContextHandler.class);
   }
 }

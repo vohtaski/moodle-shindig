@@ -2,6 +2,7 @@
 java/samples/src/main/resources/socialjpa.properties_production
 java/common/conf/shindig.properties_production
 java/server/src/main/webapp/WEB-INF/web.xml_production
+ssl_keys/
 
 # this folder should exist!!
 !features/src/main/javascript/features/core.log/

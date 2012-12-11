@@ -22,8 +22,8 @@ See instructions in [Moodle plugin](https://github.com/vohtaski/shindig-moodle-m
 ## Install Shindig for Moodle
 
 If you want to support OpenSocial APIs, you should
-connect your own Shindig installation to your Moodle database. You will need to patch the core
-Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle database schema.
+connect your own Shindig installation to your Moodle database. This
+shindig code has Moodle-extensions to match OpenSocial APIs with Moodle database schema.
 
 ### Get extended Shindig!  
     
@@ -40,21 +40,21 @@ Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle datab
    
 ### Copy the following three files 
 
-You can save your specific configurations in these three files. When you
-update the code, they will not be touches. When you make production
-version of your shindig, these files are taken.
+You can save all your specific configurations in these three files. When you
+update the code, they will not be touched. When you make production
+version of your shindig, these files are taken into account.
 
     $cp java/common/conf/shindig.properties java/common/conf/shindig.properties_production
     $cp java/samples/src/main/resources/socialjpa.properties java/samples/src/main/resources/socialjpa.properties_production
     $cp java/server/src/main/webapp/WEB-INF/web.xml java/server/src/main/webapp/WEB-INF/web.xml_production
 
-### Add the ssl keys information into shindig.properties_production.
+### Change the ssl keys information in shindig.properties_production
     
     shindig.signing.key-name=mytestkey
     shindig.signing.key-file=/path_to_shindig_branch/ssl_keys/oauthkey.pem
     
 
-### Add your database information to socialjpa.properties_production
+### Change your database information in socialjpa.properties_production
     
     db.driver=com.mysql.jdbc.Driver
     db.url=jdbc:mysql://localhost:3306/moodle
@@ -66,7 +66,7 @@ version of your shindig, these files are taken.
     shindig.canonical.json.db=sampledata/canonicaldb.json
     
     
-### Change host and port settings for your Shindig
+### Change host and port settings for your Shindig in web.xml
     
     # You should specify which Shindig host will be run, e.g. , if you want
     # to run the Shindig host on your local machine, you should replace the
@@ -95,22 +95,22 @@ Compilation and running with make
 Compile
 -------
 
-    make
+    $make
     
 Run server at localhost
 ----------
 
-    make start # Shindig should be at localhost:8080
+    $make start # Shindig should be at localhost:8080
 
 Clear all production temporal changes
 ---
   
-    make clean
+    $make clean
 
 Prepare .war files for Production
 ---
 
-    make production -> takes your config files "*_production" and builds production.war in the current directory
+    $make production -> takes your config files "*_production" and builds production.war in the current directory based on them
     
 !!! Compiled .war file should be renamed into ROOT.war on the Tomcat server.
 

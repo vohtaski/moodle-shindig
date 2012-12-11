@@ -40,6 +40,10 @@ Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle datab
    
 ### Copy the following three files 
 
+You can save your specific configurations in these three files. When you
+update the code, they will not be touches. When you make production
+version of your shindig, these files are taken.
+
     $cp java/common/conf/shindig.properties java/common/conf/shindig.properties_production
     $cp java/samples/src/main/resources/socialjpa.properties java/samples/src/main/resources/socialjpa.properties_production
     $cp java/server/src/main/webapp/WEB-INF/web.xml java/server/src/main/webapp/WEB-INF/web.xml_production

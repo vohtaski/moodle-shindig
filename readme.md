@@ -14,23 +14,25 @@ Requirements
 
 Installation
 ==============
-Install moodle plugin
---------------
+
+## Install Moodle plugin
+
 See instructions in [Moodle plugin](https://github.com/vohtaski/shindig-moodle-mod).
 
-Install shindig for moodle
---------------------------
-If you want to support OpenSocial APIs, you should
-connect your own shindig installation to your Moodle database. You will need to patch the core
-Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle database schema.
-You can find a patch in the code - shindig_moodle.patch.
+## Install Shindig for Moodle
 
-Get shindig and patch it!  
+If you want to support OpenSocial APIs, you should
+connect your own Shindig installation to your Moodle database. You will need to patch the core
+Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle database schema.
+
+### Configuration
+
+1. Get extended Shindig!  
     
     $git clone git://github.com/vohtaski/moodle-shindig.git
     
     
-Add ssl keys
+2. Add ssl keys
    
     $mkdir ssl_keys
     $cd ssl_keys
@@ -38,13 +40,19 @@ Add ssl keys
     $openssl pkcs8 -in testkey.pem -out oauthkey.pem -topk8 -nocrypt -outform PEM
     
    
-Add the ssl keys information into java/common/conf/shindig.properties. Don't forget the full path to your oauthkey.pem!!
+3. Copy the following three files 
+
+    $cp java/common/conf/shindig.properties java/common/conf/shindig.properties_production
+    $cp java/samples/src/main/resources/socialjpa.properties java/samples/src/main/resources/socialjpa.properties_production
+    $cp java/server/src/main/webapp/WEB-INF/web.xml java/server/src/main/webapp/WEB-INF/web.xml_production
+
+4. Add the ssl keys information into shindig.properties_production. Don't forget the full path to your oauthkey.pem!!
     
     shindig.signing.key-name=mytestkey
     shindig.signing.key-file=/path_to_shindig_branch/ssl_keys/oauthkey.pem
     
 
-Add your database information to java/samples/src/main/resources/socialjpa.properties.
+5. Add your database information to socialjpa.properties_production
     
     db.driver=com.mysql.jdbc.Driver
     db.url=jdbc:mysql://localhost:3306/moodle
@@ -56,10 +64,10 @@ Add your database information to java/samples/src/main/resources/socialjpa.prope
     shindig.canonical.json.db=sampledata/canonicaldb.json
     
     
-Change host and port settings for your shindig
+6. Change host and port settings for your Shindig
     
-    # You should specify which shindig host will be run, e.g. , if you want
-    # to run the shindig host on your local machine, you should replace the
+    # You should specify which Shindig host will be run, e.g. , if you want
+    # to run the Shindig host on your local machine, you should replace the
     # value "iamac71.epfl.ch" with "localhost" in
     # java/server/src/main/webapp/WEB-INF/web.xml line 58
     
@@ -68,25 +76,53 @@ Change host and port settings for your shindig
     shindig.port=8080
     
 
-Change the url of your moodle installation
+7. Change the url of your Moodle installation
     
     # In file: java/samples/src/main/java/org/apache/shindig/social/opensocial/jpa/SpaceDb.java
     # Change MOODLE_URL to your own url
     public static final String MOODLE_URL = "http://iamac71.epfl.ch/moodle";
 
 
-Change column name in person.db file. Only, if you do not use standard moodle prefix for tables "mdl_"
+8. Change column name in person.db file. Only, if you do not use standard Moodle prefix for tables "mdl_"
     
     @Table(name = "mdl_user")
     
-Compile and start your server
+
+Compilation and running
+=======================
+Compile
+-------
+
+    make
     
+Run server at localhost
+----------
+
+    make start
+
+Shindig should be at localhost:8080
+
+Clear all production temporal changes
+=================================================
+  
+    make clean
+
+Prepare .war files for Production
+=======================
+
+    make production -> takes your config files "*_production" and builds production.war in the current directory
+    
+!!! Compiled .war file should be renamed into ROOT.war on the Tomcat server.
+
+Alternative starting with maven
+===============================
+
     // To build the project
     $mvn -Dmaven.test.skip
     // To run the server on localhost (if not - put .war file into tomcat)
     $cd java/server
     $mvn jetty:run
-    
+
 License
 =======
 

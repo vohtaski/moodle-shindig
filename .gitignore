@@ -1,3 +1,8 @@
+# moodle production config files
+java/samples/src/main/resources/socialjpa.properties_production
+java/common/conf/shindig.properties_production
+java/server/src/main/webapp/WEB-INF/web.xml_production
+
 *~
 *.swp
 

@@ -25,14 +25,12 @@ If you want to support OpenSocial APIs, you should
 connect your own Shindig installation to your Moodle database. You will need to patch the core
 Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle database schema.
 
-### Configuration
-
-1. Get extended Shindig!  
+### Get extended Shindig!  
     
     $git clone git://github.com/vohtaski/moodle-shindig.git
     
     
-2. Add ssl keys
+### Add ssl keys
    
     $mkdir ssl_keys
     $cd ssl_keys
@@ -40,19 +38,19 @@ Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle datab
     $openssl pkcs8 -in testkey.pem -out oauthkey.pem -topk8 -nocrypt -outform PEM
     
    
-3. Copy the following three files 
+### Copy the following three files 
 
     $cp java/common/conf/shindig.properties java/common/conf/shindig.properties_production
     $cp java/samples/src/main/resources/socialjpa.properties java/samples/src/main/resources/socialjpa.properties_production
     $cp java/server/src/main/webapp/WEB-INF/web.xml java/server/src/main/webapp/WEB-INF/web.xml_production
 
-4. Add the ssl keys information into shindig.properties_production. Don't forget the full path to your oauthkey.pem!!
+### Add the ssl keys information into shindig.properties_production.
     
     shindig.signing.key-name=mytestkey
     shindig.signing.key-file=/path_to_shindig_branch/ssl_keys/oauthkey.pem
     
 
-5. Add your database information to socialjpa.properties_production
+### Add your database information to socialjpa.properties_production
     
     db.driver=com.mysql.jdbc.Driver
     db.url=jdbc:mysql://localhost:3306/moodle
@@ -64,7 +62,7 @@ Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle datab
     shindig.canonical.json.db=sampledata/canonicaldb.json
     
     
-6. Change host and port settings for your Shindig
+### Change host and port settings for your Shindig
     
     # You should specify which Shindig host will be run, e.g. , if you want
     # to run the Shindig host on your local machine, you should replace the
@@ -76,19 +74,19 @@ Apache Shindig with Moodle-extensions to match OpenSocial APIs with Moodle datab
     shindig.port=8080
     
 
-7. Change the url of your Moodle installation
+### Change the url of your Moodle installation
     
     # In file: java/samples/src/main/java/org/apache/shindig/social/opensocial/jpa/SpaceDb.java
     # Change MOODLE_URL to your own url
     public static final String MOODLE_URL = "http://iamac71.epfl.ch/moodle";
 
 
-8. Change column name in person.db file. Only, if you do not use standard Moodle prefix for tables "mdl_"
+### Change column name in person.db file. Only, if you do not use standard Moodle prefix for tables "mdl_"
     
     @Table(name = "mdl_user")
     
 
-Compilation and running
+Compilation and running with make
 =======================
 Compile
 -------
@@ -98,17 +96,15 @@ Compile
 Run server at localhost
 ----------
 
-    make start
-
-Shindig should be at localhost:8080
+    make start # Shindig should be at localhost:8080
 
 Clear all production temporal changes
-=================================================
+---
   
     make clean
 
 Prepare .war files for Production
-=======================
+---
 
     make production -> takes your config files "*_production" and builds production.war in the current directory
     
